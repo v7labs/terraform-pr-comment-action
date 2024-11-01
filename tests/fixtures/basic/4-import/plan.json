@@ -1,0 +1,23 @@
+{
+    "format_version": "1.0",
+    "terraform_version": "1.8.2",
+    "resource_changes": [
+        {
+            "address": "aws_s3_bucket.imported",
+            "mode": "managed",
+            "type": "aws_s3_bucket",
+            "name": "imported",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "import"
+                ],
+                "before": null,
+                "after": {
+                    "bucket": "existing-bucket",
+                    "id": "existing-bucket"
+                }
+            }
+        }
+    ]
+}

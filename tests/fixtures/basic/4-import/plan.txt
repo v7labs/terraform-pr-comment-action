@@ -1,0 +1,7 @@
+  # aws_s3_bucket.imported will be imported
+  + resource "aws_s3_bucket" "imported" {
+      + bucket = "existing-bucket"
+      + id     = "existing-bucket"
+    }
+
+Plan: 1 to import, 0 to add, 0 to change, 0 to destroy.
