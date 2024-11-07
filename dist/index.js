@@ -30064,11 +30064,12 @@ var planfileSchema = z.object({
           z.tuple([z.literal("delete")]),
           z.tuple([z.literal("update")]),
           z.tuple([z.literal("delete"), z.literal("create")]),
-          z.tuple([z.literal("create"), z.literal("delete")])
+          z.tuple([z.literal("create"), z.literal("delete")]),
+          z.tuple([z.literal("import")])
         ])
       })
     })
-  )
+  ).default([])
 });
 function parsePlanfileJSON(json) {
   return planfileSchema.parse(json);
