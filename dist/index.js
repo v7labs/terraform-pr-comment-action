@@ -30174,9 +30174,9 @@ function isValidComment(comment) {
   return true;
 }
 function getTerraformPlanLink() {
-  const repo = github2.context.repo;
+  const { owner, repo } = github2.context.repo;
   const runId = github2.context.runId;
-  return `https://github.com/${repo}/actions/runs/${runId}/artifacts`;
+  return `https://github.com/${owner}/${repo}/actions/runs/${runId}/artifacts`;
 }
 async function run() {
   const inputs = {
