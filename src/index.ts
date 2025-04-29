@@ -13,9 +13,9 @@ function isValidComment(comment: string) {
 
 // Generate link to terraform plan file artifact
 function getTerraformPlanLink() {
-  const repo = github.context.repo
+  const { owner, repo } = github.context.repo
   const runId = github.context.runId
-  return `https://github.com/${repo}/actions/runs/${runId}/artifacts`
+  return `https://github.com/${owner}/${repo}/actions/runs/${runId}`
 }
 
 async function run() {
