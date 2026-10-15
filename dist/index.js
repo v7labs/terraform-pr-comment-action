@@ -26048,10 +26048,10 @@ ${content}
   return result;
 }
 function renderBody(plan) {
-  if (!plan.createdResources && !plan.recreatedResources && !plan.updatedResources && !plan.deletedResources && !plan.importedResources) {
+  if (!plan.createdResources && !plan.recreatedResources && !plan.updatedResources && !plan.deletedResources && !plan.importedResources && !plan.forgottenResources) {
     return "**\u2192 No Resource Changes!**";
   }
-  let body = `**\u2192 Resource Changes: ${Object.keys(plan.createdResources ?? {}).length} to create, ${Object.keys(plan.updatedResources ?? {}).length} to update, ${Object.keys(plan.recreatedResources ?? {}).length} to re-create, ${Object.keys(plan.deletedResources ?? {}).length} to delete, ${Object.keys(plan.importedResources ?? {}).length} to import.**`;
+  let body = `**\u2192 Resource Changes: ${Object.keys(plan.createdResources ?? {}).length} to create, ${Object.keys(plan.updatedResources ?? {}).length} to update, ${Object.keys(plan.recreatedResources ?? {}).length} to re-create, ${Object.keys(plan.deletedResources ?? {}).length} to delete, ${Object.keys(plan.importedResources ?? {}).length} to import` + (plan.forgottenResources ? `, ${Object.keys(plan.forgottenResources).length} to forget.**` : ".**");
   if (plan.createdResources) {
     body += "\n\n### \u2728 Create";
     body += renderResources(plan.createdResources);
@@ -26071,6 +26071,10 @@ function renderBody(plan) {
   if (plan.importedResources) {
     body += "\n\n### \u{1F4E5} Import";
     body += renderResources(plan.importedResources);
+  }
+  if (plan.forgottenResources) {
+    body += "\n\n### \u{1F44B} Forget";
+    body += renderResources(plan.forgottenResources);
   }
   return body;
 }
@@ -30065,7 +30069,8 @@ var planfileSchema = z.object({
           z.tuple([z.literal("update")]),
           z.tuple([z.literal("delete"), z.literal("create")]),
           z.tuple([z.literal("create"), z.literal("delete")]),
-          z.tuple([z.literal("import")])
+          z.tuple([z.literal("import")]),
+          z.tuple([z.literal("forget")])
         ])
       })
     })
@@ -30078,7 +30083,9 @@ function parsePlanfileJSON(json) {
 // src/render.ts
 function extractResourceContent(name, humanReadablePlan) {
   const lines = humanReadablePlan.split("\n");
-  const resourceHeaderIndex = lines.findIndex((line) => line.startsWith(`  # ${name}`));
+  const resourceHeaderIndex = lines.findIndex(
+    (line) => line.startsWith(`  # ${name}`) || line.startsWith(` # ${name}`)
+  );
   if (resourceHeaderIndex < 0) {
     throw Error(`Resource '${name}' is modified but cannot be found in human-readable plan.`);
   }
@@ -30144,12 +30151,14 @@ function internalRenderPlan(structuredPlan, humanReadablePlan) {
   ).map((r) => r.address);
   const deletedResources = structuredPlan.resource_changes.filter((r) => r.change.actions.toString() === ["delete"].toString()).map((r) => r.address);
   const importedResources = structuredPlan.resource_changes.filter((r) => r.change.actions.toString() === ["import"].toString()).map((r) => r.address);
+  const forgottenResources = structuredPlan.resource_changes.filter((r) => r.change.actions.toString() === ["forget"].toString()).map((r) => r.address);
   return {
     createdResources: extractResources(createdResources, humanReadablePlan),
     updatedResources: extractResources(updatedResources, humanReadablePlan),
     recreatedResources: extractResources(recreatedResources, humanReadablePlan),
     deletedResources: extractResources(deletedResources, humanReadablePlan),
-    importedResources: extractResources(importedResources, humanReadablePlan)
+    importedResources: extractResources(importedResources, humanReadablePlan),
+    forgottenResources: extractResources(forgottenResources, humanReadablePlan)
   };
 }
 async function renderPlan({
