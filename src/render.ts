@@ -8,6 +8,7 @@ export type RenderedPlan = {
   recreatedResources?: Record<string, string>
   deletedResources?: Record<string, string>
   importedResources?: Record<string, string>
+  forgottenResources?: Record<string, string>
 }
 
 type ResourceContent = {
@@ -18,8 +19,11 @@ type ResourceContent = {
 function extractResourceContent(name: string, humanReadablePlan: string): ResourceContent {
   const lines = humanReadablePlan.split('\n')
 
-  // In the plan, find the resource with the appropriate name
-  const resourceHeaderIndex = lines.findIndex((line) => line.startsWith(`  # ${name}`))
+  // In the plan, find the resource with the appropriate name. Forgotten resources are indented
+  // by one space instead of two.
+  const resourceHeaderIndex = lines.findIndex(
+    (line) => line.startsWith(`  # ${name}`) || line.startsWith(` # ${name}`)
+  )
   if (resourceHeaderIndex < 0) {
     throw Error(`Resource '${name}' is modified but cannot be found in human-readable plan.`)
   }
@@ -122,13 +126,17 @@ export function internalRenderPlan(
   const importedResources = structuredPlan.resource_changes
     .filter((r) => r.change.actions.toString() === ['import'].toString())
     .map((r) => r.address)
+  const forgottenResources = structuredPlan.resource_changes
+    .filter((r) => r.change.actions.toString() === ['forget'].toString())
+    .map((r) => r.address)
 
   return {
     createdResources: extractResources(createdResources, humanReadablePlan),
     updatedResources: extractResources(updatedResources, humanReadablePlan),
     recreatedResources: extractResources(recreatedResources, humanReadablePlan),
     deletedResources: extractResources(deletedResources, humanReadablePlan),
-    importedResources: extractResources(importedResources, humanReadablePlan)
+    importedResources: extractResources(importedResources, humanReadablePlan),
+    forgottenResources: extractResources(forgottenResources, humanReadablePlan)
   }
 }
 

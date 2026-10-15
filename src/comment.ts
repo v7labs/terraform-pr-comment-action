@@ -18,7 +18,8 @@ function renderBody(plan: RenderedPlan): string {
     !plan.recreatedResources &&
     !plan.updatedResources &&
     !plan.deletedResources &&
-    !plan.importedResources
+    !plan.importedResources &&
+    !plan.forgottenResources
   ) {
     return '**→ No Resource Changes!**'
   }
@@ -29,7 +30,10 @@ function renderBody(plan: RenderedPlan): string {
     `${Object.keys(plan.updatedResources ?? {}).length} to update, ` +
     `${Object.keys(plan.recreatedResources ?? {}).length} to re-create, ` +
     `${Object.keys(plan.deletedResources ?? {}).length} to delete, ` +
-    `${Object.keys(plan.importedResources ?? {}).length} to import.**`
+    `${Object.keys(plan.importedResources ?? {}).length} to import` +
+    (plan.forgottenResources
+      ? `, ${Object.keys(plan.forgottenResources).length} to forget.**`
+      : '.**')
 
   if (plan.createdResources) {
     body += '\n\n### ✨ Create'
@@ -50,6 +54,10 @@ function renderBody(plan: RenderedPlan): string {
   if (plan.importedResources) {
     body += '\n\n### 📥 Import'
     body += renderResources(plan.importedResources)
+  }
+  if (plan.forgottenResources) {
+    body += '\n\n### 👋 Forget'
+    body += renderResources(plan.forgottenResources)
   }
 
   return body
